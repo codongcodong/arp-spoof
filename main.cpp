@@ -23,6 +23,7 @@ void sigalrmHandler(int sig){
 void sigintHandler(int sig){
 	printf("Recovering Target ARP table\n");
 	recoverArp(handle, *myAddressInfo_p);
+	pcap_close(handle);
 	printf("Terminating Program\n");
 	exit(0);
 }
@@ -41,7 +42,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	addressInfo myAddressInfo(argv[1]);		//initializing my adresss information
+	addressInfo myAddressInfo(argv[1]);			//initializing my adresss information
 	myAddressInfo_p = &myAddressInfo;
 	myAddressInfo.printAddressInfo();
 
@@ -71,6 +72,4 @@ int main(int argc, char* argv[]) {
 	alarm(5);
 	
 	spoofARP(handle, myAddressInfo);			//initiate ARP spoofing
-	
-	pcap_close(handle);
 }

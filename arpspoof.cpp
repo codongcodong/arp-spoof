@@ -162,9 +162,9 @@ void spoofARP(pcap_t* handle, const addressInfo &myAddressInfo){
                     const Ip &s_Ip = myAddressInfo.targetPairs_IP_object[i].first;
                     const Ip &t_Ip = myAddressInfo.targetPairs_IP_object[i].second;
 
-                    if((ethPacket->arp_.sip_.operator==(s_Ip) && ethPacket->arp_.tip_.operator==(t_Ip))       //sender -> target REQ 
+                    if((ethPacket->arp_.sip_.operator==(s_Ip) && ethPacket->arp_.tip_.operator==(t_Ip))        //sender -> target REQ 
                         || (ethPacket->arp_.sip_.operator==(t_Ip) && ethPacket->arp_.tip_.operator==(s_Ip))){  //target -> sender REQ
-                            printf("Re-infecting sender%d: %s\n",i,myAddressInfo.targetPairs[i].first);       //re-infect sender
+                            printf("Re-infecting sender%d: %s\n",i,myAddressInfo.targetPairs[i].first);        //re-infect sender
                             sendFakeARP(handle, myAddressInfo, myAddressInfo.targetPairs[i].first, myAddressInfo.targetPairs[i].second);
                     }
                 }

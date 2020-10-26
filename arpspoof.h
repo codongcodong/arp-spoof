@@ -27,11 +27,6 @@ public:
         puts("");
     }
 
-    addressInfo(){
-        myMac = Mac("FF:FF:FF:FF:FF:FF");
-        myIp = Ip("127.0.0.1");
-    };
-
     addressInfo(const char* ifname){
         myMac = getMyMac(ifname);
         myIp = getMyIp(ifname);
