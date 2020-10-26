@@ -218,8 +218,8 @@ void recoverArp(pcap_t* handle, const addressInfo &myAddressInfo){
 
 void sendFakeARP(pcap_t* handle, const addressInfo &myAddressInfo, const char* senderIp, const char* targetIp){
 
-    Mac senderMac = myAddressInfo.arpCache.find(senderIp)->second;
-    //Mac targetMac = myAddressInfo.arpCache.find(targetIp)->second;
+    const Mac &senderMac = myAddressInfo.arpCache.find(senderIp)->second;
+    //const Mac &targetMac = myAddressInfo.arpCache.find(targetIp)->second;
 
     EthArpPacket packet;
 
@@ -245,8 +245,8 @@ void sendFakeARP(pcap_t* handle, const addressInfo &myAddressInfo, const char* s
 
 void sendNormalARP(pcap_t* handle, const addressInfo &myAddressInfo, const char* senderIp, const char* targetIp){
 
-    Mac senderMac = myAddressInfo.arpCache.find(senderIp)->second;
-    Mac targetMac = myAddressInfo.arpCache.find(targetIp)->second;
+    const Mac &senderMac = myAddressInfo.arpCache.find(senderIp)->second;
+    const Mac &targetMac = myAddressInfo.arpCache.find(targetIp)->second;
 
     EthArpPacket packet;
 
