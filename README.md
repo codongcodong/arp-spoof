@@ -33,10 +33,10 @@ Relaying 98 bytes packet: sender0 - 192.168.0.2 => target0 - 192.168.0.1
 Relaying 98 bytes packet: sender0 - 192.168.0.2 => target0 - 192.168.0.1  
 Relaying 98 bytes packet: sender0 - 192.168.0.2 => target0 - 192.168.0.1  
 Relaying 98 bytes packet: sender2 - 192.168.0.4 => target2 - 192.168.0.1  
-Reinfecting Targets  
+Reinfecting Senders  
 Relaying 98 bytes packet: sender0 - 192.168.0.2 => target0 - 192.168.0.1  
 Relaying 98 bytes packet: sender0 - 192.168.0.2 => target0 - 192.168.0.1  
 Relaying 98 bytes packet: sender1 - 192.168.0.1 => target1 - 192.168.0.2   
 
-^CRecovering Target ARP table   
+^CRecovering Sender ARP table   
 Terminating Program  

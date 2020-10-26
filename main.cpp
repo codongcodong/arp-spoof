@@ -15,13 +15,13 @@ void usage() {
 }
 
 void sigalrmHandler(int sig){
-	printf("Reinfecting Targets\n");
+	printf("Reinfecting Senders\n");
 	infectArp(handle, *myAddressInfo_p);
 	alarm(5);
 }
 
 void sigintHandler(int sig){
-	printf("Recovering Target ARP table\n");
+	printf("Recovering Sender ARP table\n");
 	recoverArp(handle, *myAddressInfo_p);
 	pcap_close(handle);
 	printf("Terminating Program\n");
