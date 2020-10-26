@@ -5,6 +5,7 @@ syntax : arp-spoof \<interface\> \<sender ip\> \<target ip\> \[\<sender ip 2\> \
 sample : arp-spoof wlan0 192.168.10.2 192.168.10.1
 
 ## Features
+- Packet relay between sender and target
 - Re-infection in every 5-second time interval  
 - ARP table recovery at program termination (press Ctrl+C to exit) 
 
